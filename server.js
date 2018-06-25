@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 const api = require('./api');
 
+// Work firewall bypass | NOT SECURE
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 if (process.env.NODE_ENV === 'development') {
   require('./webpack-dev-middleware').init(app);
 }
