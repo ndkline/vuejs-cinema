@@ -1,14 +1,21 @@
 <template>
     <div id="movie-list">
         <div v-if="filteredMovies.length">
-            <movie-item v-for="movie in filteredMovies"
-                        v-bind:movie="movie.movie"
-                        v-bind:sessions="movie.sessions"
-                        v-bind:day="day"
-            ></movie-item>
+            <movie-item v-for="movie in filteredMovies" v-bind:movie="movie.movie">
+                <div class="movie-sessions">
+                    <div 
+                    v-for="session in filteredSessions(movie.sessions)" 
+                    class="session-time-wrapper tooltip-wrapper"
+                    v-tooltip="{ seats: session.seats }"
+                    v-bind:key="session.id"
+                    >
+                        <div class="session-time">{{ formatSessionTime(session.time) }}</div>
+                    </div>
+                </div>
+            </movie-item>
         </div>
         <div v-else-if="movies.length" class="no-results">
-            No results.
+            {{ noResults }}
         </div>
         <div v-else class="no-results">
             Loading...
@@ -22,6 +29,12 @@ import MovieItem from "./MovieItem.vue";
 export default {
   props: ["genre", "time", "movies", "day"],
   methods: {
+    formatSessionTime(raw) {
+      return this.$moment(raw).format("h:mm A");
+    },
+    filteredSessions(sessions) {
+      return sessions.filter(this.sessionPassesTimeFilter);
+    },
     moviePassesGenreFilter(movie) {
       if (!this.genre.length) {
         return true;
@@ -53,6 +66,13 @@ export default {
       return this.movies
         .filter(this.moviePassesGenreFilter)
         .filter(movie => movie.sessions.find(this.sessionPassesTimeFilter));
+    },
+    noResults() {
+      let times = this.time.join(", ");
+      let genres = this.genre.join(", ");
+      return `No results for ${times}${
+        times.length && genres.length ? ", " : ""
+      }${genres}.`;
     }
   },
   components: {
